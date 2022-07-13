@@ -1,50 +1,60 @@
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.Scanner;
 
 public class VRUI {
     private static Scanner scanner = new Scanner(System.in);
 
-    private List<Customer> customers = new ArrayList<Customer>();
-
-    private List<Video> videos = new ArrayList<Video>();
+    private static CustomerService customerService;
+    private static VideoService videoService;
 
     public static void main(String[] args) {
         VRUI ui = new VRUI();
+        ui.run();
+    }
 
+    public VRUI() {
+        customerService = new CustomerService();
+        videoService = new VideoService();
+    }
+
+    enum Commands {
+        EXIT, LIST_CUSTOMERS, LIST_VIDEOS, REGISTER_CUSTOMER, REGISTER_VIDEO, RENT_VIDEO, RETURN_VIDEO, GET_CUSTOMER_REPORT, CLEAR_RENTALS, DEBUG
+    }
+
+    public void run() {
         while (true) {
-            int command = ui.showCommand();
+            this.showCommand();
+            Commands command = Commands.values()[scanner.nextInt()];
+
             switch (command) {
-                case 0:
+                case EXIT:
                     System.out.println("Bye");
                     return;
-                case 1:
-                    ui.listCustomers();
+                case LIST_CUSTOMERS:
+                    listCustomers();
                     break;
-                case 2:
-                    ui.listVideos();
+                case LIST_VIDEOS:
+                    listVideos();
                     break;
-                case 3:
-                    ui.registerCustomer();
+                case REGISTER_CUSTOMER:
+                    registerCustomer();
                     break;
-                case 4:
-                    ui.registerVideo();
+                case REGISTER_VIDEO:
+                    registerVideo();
                     break; // register 함수 분리
-                case 5:
-                    ui.rentVideo();
+                case RENT_VIDEO:
+                    rentVideo();
                     break; // register 함수 분리
-                case 6:
-                    ui.returnVideo();
+                case RETURN_VIDEO:
+                    returnVideo();
                     break;
-                case 7:
-                    ui.getCustomerReport();
+                case GET_CUSTOMER_REPORT:
+                    getCustomerReport();
                     break;
-                case 8:
-                    ui.clearRentals();
+                case CLEAR_RENTALS:
+                    clearRentals();
                     break;
-                case -1:
-                    ui.init();
+                case DEBUG:
+                    debug();
                     break;
                 default:
                     break;
@@ -66,58 +76,43 @@ public class VRUI {
             System.out.print("\tPrice Code: " + rental.getVideo().getPriceCode());
         }
 
-        List<Rental> rentals = new ArrayList<Rental>();
-        foundCustomer.setRentals(rentals);
+        customerService.clearRentals(foundCustomer);
     }
 
+    // videoService로 역할 분리
     public void returnVideo() {
         System.out.println("Enter customer name: ");
         String customerName = scanner.next();
-
-        Customer foundCustomer = null;
-        for (Customer customer : customers) {
-            if (customer.getName().equals(customerName)) {
-                foundCustomer = customer;
-                break;
-            }
-        }
+        Customer foundCustomer = customerService.findCustomer(customerName);
         if (foundCustomer == null) return;
 
         System.out.println("Enter video title to return: ");
         String videoTitle = scanner.next();
 
-        List<Rental> customerRentals = foundCustomer.getRentals();
-        for (Rental rental : customerRentals) {
-            if (rental.getVideo().getTitle().equals(videoTitle) && rental.getVideo().isRented()) {
-                rental.returnVideo();
-                rental.getVideo().setRented(false);
-                break;
-            }
-        }
+        videoService.returnVideo(foundCustomer, videoTitle);
     }
 
-    private void init() {
+    private void debug() {
         Customer james = new Customer("James");
         Customer brown = new Customer("Brown");
-        customers.add(james);
-        customers.add(brown);
+
+        customerService.addCustomer(james);
+        customerService.addCustomer(brown);
 
         Video v1 = new Video("v1", Video.VideoType.CD, Video.PriceCode.Regular);
         Video v2 = new Video("v2", Video.VideoType.DVD, Video.PriceCode.New_Release);
-        videos.add(v1);
-        videos.add(v2);
+        videoService.addVideos(v1);
+        videoService.addVideos(v2);
 
-        Rental r1 = new Rental(v1);
-        Rental r2 = new Rental(v2);
 
-        james.addRental(r1);
-        james.addRental(r2);
+        james.addRental(new Rental(v1));
+        james.addRental(new Rental(v2));
     }
 
     public void listVideos() {
         System.out.println("List of videos");
 
-        for (Video video : videos) {
+        for (Video video : videoService.getVideos()) {
             System.out.println("Price code: " + video.getPriceCode() + "\tTitle: " + video.getTitle());
         }
         System.out.println("End of list");
@@ -125,7 +120,7 @@ public class VRUI {
 
     public void listCustomers() {
         System.out.println("List of customers");
-        for (Customer customer : customers) {
+        for (Customer customer : customerService.getCustomerList()) {
             System.out.println("Name: " + customer.getName() +
                     "\tRentals: " + customer.getRentals().size());
             for (Rental rental : customer.getRentals()) {
@@ -140,14 +135,7 @@ public class VRUI {
         System.out.println("Enter customer name: ");
         String customerName = scanner.next();
 
-        Customer foundCustomer = null;
-        for (Customer customer : customers) {
-            if (customer.getName().equals(customerName)) {
-                foundCustomer = customer;
-                break;
-            }
-        }
-        return foundCustomer;
+        return customerService.getCustomer(customerName);
     }
 
     private void showCoupon(int totalPoint) { // 함수분리
@@ -159,50 +147,6 @@ public class VRUI {
         }
     }
 
-    private double getTotalCharge(List<Rental> rentals) {
-        double totalCharge = 0;
-
-        for (Rental each : rentals) {
-            totalCharge += each.getCharge();;
-        }
-
-        return totalCharge;
-    }
-
-
-    private int getTotalPoint(List<Rental> rentals) {
-        int totalPoint = 0;
-
-        for (Rental each : rentals) {
-            totalPoint += each.getPoint();;
-        }
-
-        return totalPoint;
-    }
-
-    public String generateReport(Customer customer) { // Customer.getRepot() 로 부터 move method
-        String result = "Customer Report for " + customer.getName() + "\n";
-
-        List<Rental> rentals = customer.getRentals();
-        double totalCharge = getTotalCharge(rentals);
-        int totalPoint = getTotalPoint(rentals);
-
-        for (Rental each : rentals) {
-            double eachCharge = each.getCharge();
-            int eachPoint = each.getPoint();
-            int daysRented = each.getDayRental();
-
-            result += "\t" + each.getVideo().getTitle() + "\tDays rented: " + daysRented + "\tCharge: " + eachCharge
-                    + "\tPoint: " + eachPoint + "\n";
-        }
-
-        result += "Total charge: " + totalCharge + "\tTotal Point:" + totalPoint + "\n";
-
-        showCoupon(totalPoint);
-
-        return result;
-    }
-
     public void getCustomerReport() {
         Customer foundCustomer = getCustomer();
         if (foundCustomer == null) {
@@ -210,10 +154,14 @@ public class VRUI {
             return;
         }
 
-        String result = generateReport(foundCustomer);
+        String result = customerService.generateReport(foundCustomer);
+        int totalPoint = customerService.getTotalPoint(foundCustomer.getRentals());
+
+        showCoupon(totalPoint);
         System.out.println(result);
     }
 
+    // videoService로 역할 분리
     public void rentVideo() {
         Customer foundCustomer = getCustomer();
         if (foundCustomer == null)
@@ -222,30 +170,14 @@ public class VRUI {
         System.out.println("Enter video title to rent: ");
         String videoTitle = scanner.next();
 
-        Video foundVideo = null;
-        for (Video video : videos) {
-            if (video.getTitle().equals(videoTitle) && video.isRented() == false) {
-                foundVideo = video;
-                break;
-            }
-        }
-
-        if (foundVideo == null) return;
-
-        Rental rental = new Rental(foundVideo);
-        foundVideo.setRented(true);
-
-        List<Rental> customerRentals = foundCustomer.getRentals();
-        customerRentals.add(rental);
-        foundCustomer.setRentals(customerRentals);
+        videoService.rentVideo(foundCustomer, videoTitle);
     }
 
     // register 함수 분리
     public void registerCustomer() {
         System.out.println("Enter customer name: ");
         String name = scanner.next();
-        Customer customer = new Customer(name);
-        customers.add(customer);
+        customerService.addCustomer(new Customer(name));
     }
 
     // register 함수 분리
@@ -258,14 +190,12 @@ public class VRUI {
 
         System.out.println("Enter price code( 1 for Regular, 2 for New Release ):");
         int priceCode = scanner.nextInt();
-        Video.VideoType videoTypeEnum = Video.VideoType.values()[videoType];
-        Video.PriceCode videoPriceCodeEnum =  Video.PriceCode.values()[priceCode];
-//        Video video = new Video(title, (Video.VideoType)videoType, (Video.PriceCode)priceCode);
-        Video video = new Video(title, videoTypeEnum, videoPriceCodeEnum); // 임시로 수정
-        videos.add(video);
+
+        Video video = new Video(title, Video.VideoType.getValue(videoType), Video.PriceCode.getValue(priceCode));
+        videoService.addVideos(video);
     }
 
-    public int showCommand() {
+    public void showCommand() {
         System.out.println("\nSelect a command !");
         System.out.println("\t 0. Quit");
         System.out.println("\t 1. List customers");
@@ -276,10 +206,5 @@ public class VRUI {
         System.out.println("\t 6. Return video");
         System.out.println("\t 7. Show customer report");
         System.out.println("\t 8. Show customer and clear rentals");
-
-        int command = scanner.nextInt();
-
-        return command;
-
     }
 }
