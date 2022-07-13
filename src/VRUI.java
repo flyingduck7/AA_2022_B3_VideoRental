@@ -16,9 +16,18 @@ public class VRUI {
         videoService = new VideoService();
     }
 
+    enum Commands {
+        EXIT, LIST_CUSTOMERS, LIST_VIDEOS, REGISTER_CUSTOMER, REGISTER_VIDEO, RENT_VIDEO, RETURN_VIDEO, GET_CUSTOMER_REPORT, CLEAR_RENTALS, DEBUG;
+        static public VRUI.Commands.getValue(int value) {
+            return VRUI.Commands.values()[value];
+        }
+    }
+
     public void run() {
         while (true) {
-            int command = showCommand();
+            this.showCommand();
+            Commands command = (Commands)scanner.nextInt();
+
             switch (command) {
                 case 0:
                     System.out.println("Bye");
@@ -57,7 +66,20 @@ public class VRUI {
     }
 
     public void clearRentals() {
-        customerService.clearRentals(getCustomer());
+        Customer foundCustomer = getCustomer();
+        if (foundCustomer == null) {
+            System.out.println("No customer found");
+            return;
+        }
+
+        System.out.println("Name: " + foundCustomer.getName() +
+                "\tRentals: " + foundCustomer.getRentals().size());
+        for (Rental rental : foundCustomer.getRentals()) {
+            System.out.print("\tTitle: " + rental.getVideo().getTitle() + " ");
+            System.out.print("\tPrice Code: " + rental.getVideo().getPriceCode());
+        }
+
+        customerService.clearRentals(foundCustomer);
     }
 
     // videoService로 역할 분리
@@ -144,7 +166,14 @@ public class VRUI {
 
     // videoService로 역할 분리
     public void rentVideo() {
-        videoService.rentVideo(getCustomer());
+        Customer foundCustomer = getCustomer();
+        if (foundCustomer == null)
+            return;
+
+        System.out.println("Enter video title to rent: ");
+        String videoTitle = scanner.next();
+
+        videoService.rentVideo(foundCustomer, videoTitle);
     }
 
     // register 함수 분리
@@ -169,7 +198,7 @@ public class VRUI {
         videoService.addVideos(video);
     }
 
-    public int showCommand() {
+    public void showCommand() {
         System.out.println("\nSelect a command !");
         System.out.println("\t 0. Quit");
         System.out.println("\t 1. List customers");
@@ -180,10 +209,5 @@ public class VRUI {
         System.out.println("\t 6. Return video");
         System.out.println("\t 7. Show customer report");
         System.out.println("\t 8. Show customer and clear rentals");
-
-        int command = scanner.nextInt();
-
-        return command;
-
     }
 }

@@ -1,10 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class VideoService {
     private List<Video> videos = new ArrayList<Video>();
-    private static Scanner scanner = new Scanner(System.in);
 
     public List<Video> getVideos() { return videos; }
 
@@ -12,13 +10,7 @@ public class VideoService {
         videos.add(video);
     }
 
-    public void rentVideo(Customer foundCustomer) {
-        if (foundCustomer == null)
-            return;
-
-        System.out.println("Enter video title to rent: ");
-        String videoTitle = scanner.next();
-
+    public void rentVideo(Customer foundCustomer, String videoTitle) {
         Video foundVideo = null;
         for (Video video : videos) {
             if (video.getTitle().equals(videoTitle) && video.isRented() == false) {
