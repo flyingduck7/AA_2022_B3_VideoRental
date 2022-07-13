@@ -1,73 +1,90 @@
 import java.util.Date;
 
 public class Video {
-	private String title ;
 
-	private int priceCode ;
-	public static final int REGULAR = 1 ;
-	public static final int NEW_RELEASE =2 ;
+    // type code(static final로 선언한거) enum으로 변경
+    enum PriceCode {Regular(1), New_Release(2);
+        private final int value;
+        private PriceCode(int value) {
+            this.value = value;
+        }
+        public int getValue() {
+            return value;
+        }
+    }
 
-	private int videoType ;
-	public static final int VHS = 1 ;
-	public static final int CD = 2 ;
-	public static final int DVD = 3 ;
+    enum VideoType {VHS(1), CD(2), DVD(3);
+        private final int value;
+        private VideoType(int value) {
+            this.value = value;
+        }
+        public int getValue() {
+            return value;
+        }
+    }
 
-	private Date registeredDate ;
-	private boolean rented ;
+    private String title;
+    private PriceCode priceCode;
+    private VideoType videoType;
+    private Date registeredDate;
+    private boolean rented;
 
-	public Video(String title, int videoType, int priceCode, Date registeredDate) {
-		this.setTitle(title) ;
-		this.setVideoType(videoType) ;
-		this.setPriceCode(priceCode) ;
-		this.registeredDate = registeredDate ;
-	}
 
-	public int getLateReturnPointPenalty() {
-		int pentalty = 0 ;
-		switch ( videoType ) {
-			case VHS: pentalty = 1 ; break ;
-			case CD: pentalty = 2 ; break ;
-			case DVD: pentalty = 3 ; break ;
-		}
-		return pentalty ;
-	}
-	public int getPriceCode() {
-		return priceCode;
-	}
+    public Video(String title, VideoType videoType, PriceCode priceCode) {
+        this.setTitle(title);
+        this.setVideoType(videoType);
+        this.setPriceCode(priceCode);
+        this.registeredDate = new Date();
+    }
 
-	public void setPriceCode(int priceCode) {
-		this.priceCode = priceCode;
-	}
+    public int getLateReturnPointPenalty() {
+        switch (videoType) {
+            case VHS:
+                return 1;
+            case CD:
+                return 2;
+            case DVD:
+                return 3;
+            default:
+                return -1;
+        }
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public PriceCode getPriceCode() {
+        return priceCode;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public boolean isNewRelease() {
+        return (priceCode == PriceCode.New_Release);
+    }
 
-	public boolean isRented() {
-		return rented;
-	}
+    public void setPriceCode(PriceCode priceCode) {
+        this.priceCode = priceCode;
+    }
 
-	public void setRented(boolean rented) {
-		this.rented = rented;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public Date getRegisteredDate() {
-		return registeredDate;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public void setRegisteredDate(Date registeredDate) {
-		this.registeredDate = registeredDate;
-	}
+    public boolean isRented() {
+        return rented;
+    }
 
-	public int getVideoType() {
-		return videoType;
-	}
+    public void setRented(boolean rented) {
+        this.rented = rented;
+    }
 
-	public void setVideoType(int videoType) {
-		this.videoType = videoType;
-	}
+    public VideoType getVideoType() {
+        return videoType;
+    }
+
+    public void setVideoType(VideoType videoType) {
+        this.videoType = videoType;
+    }
+
+
 }
