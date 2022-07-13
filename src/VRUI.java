@@ -17,47 +17,44 @@ public class VRUI {
     }
 
     enum Commands {
-        EXIT, LIST_CUSTOMERS, LIST_VIDEOS, REGISTER_CUSTOMER, REGISTER_VIDEO, RENT_VIDEO, RETURN_VIDEO, GET_CUSTOMER_REPORT, CLEAR_RENTALS, DEBUG;
-        static public VRUI.Commands.getValue(int value) {
-            return VRUI.Commands.values()[value];
-        }
+        EXIT, LIST_CUSTOMERS, LIST_VIDEOS, REGISTER_CUSTOMER, REGISTER_VIDEO, RENT_VIDEO, RETURN_VIDEO, GET_CUSTOMER_REPORT, CLEAR_RENTALS, DEBUG
     }
 
     public void run() {
         while (true) {
             this.showCommand();
-            Commands command = (Commands)scanner.nextInt();
+            Commands command = Commands.values()[scanner.nextInt()];
 
             switch (command) {
-                case 0:
+                case EXIT:
                     System.out.println("Bye");
                     return;
-                case 1:
+                case LIST_CUSTOMERS:
                     listCustomers();
                     break;
-                case 2:
+                case LIST_VIDEOS:
                     listVideos();
                     break;
-                case 3:
+                case REGISTER_CUSTOMER:
                     registerCustomer();
                     break;
-                case 4:
+                case REGISTER_VIDEO:
                     registerVideo();
                     break; // register 함수 분리
-                case 5:
+                case RENT_VIDEO:
                     rentVideo();
                     break; // register 함수 분리
-                case 6:
+                case RETURN_VIDEO:
                     returnVideo();
                     break;
-                case 7:
+                case GET_CUSTOMER_REPORT:
                     getCustomerReport();
                     break;
-                case 8:
+                case CLEAR_RENTALS:
                     clearRentals();
                     break;
-                case -1:
-                    init();
+                case DEBUG:
+                    debug();
                     break;
                 default:
                     break;
@@ -95,7 +92,7 @@ public class VRUI {
         videoService.returnVideo(foundCustomer, videoTitle);
     }
 
-    private void init() {
+    private void debug() {
         Customer james = new Customer("James");
         Customer brown = new Customer("Brown");
 
