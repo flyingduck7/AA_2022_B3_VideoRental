@@ -2,8 +2,9 @@ import java.util.Date;
 
 public class Video {
 
-    // type code(static final로 선언한거) enum으로 변경
-    enum PriceCode {Regular(1), New_Release(2);
+    enum PriceCode {
+        Regular(1), New_Release(2);
+
         private final int value;
         private PriceCode(int value) {
             this.value = value;
@@ -11,15 +12,23 @@ public class Video {
         public int getValue() {
             return value;
         }
+        static public PriceCode getValue(int value) {
+            return PriceCode.values()[value];
+        }
     }
 
-    enum VideoType {VHS(1), CD(2), DVD(3);
+    enum VideoType {
+        VHS(1), CD(2), DVD(3);
+
         private final int value;
         private VideoType(int value) {
             this.value = value;
         }
         public int getValue() {
             return value;
+        }
+        static public VideoType getValue(int value) {
+            return VideoType.values()[value];
         }
     }
 
